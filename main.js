@@ -8,10 +8,22 @@ lifx.startDiscovery();
 let controller = Botkit.slackbot({
 	debug: true
 });
-
 let bot = controller.spawn({
 	token: process.env.SLACK_TOKEN
-}).startRTM();
+});
+//handle silent disconnects
+//https://github.com/howdyai/botkit/issues/261
+let startRtm = () => {
+	bot.startRTM((err, bot, payload) => {
+		if(err){
+			return setTimeout(startRtm, 60000);
+		}
+		console.log("RTM Started");
+	});
+}
+controller.on('rtm_close', (bot, err) => {
+	startRtm();
+});
 
 let commandResults = commands.map((commandFn) => {
 	return commandFn(lifx, controller);
