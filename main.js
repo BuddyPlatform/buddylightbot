@@ -28,3 +28,4 @@ controller.on('rtm_close', (bot, err) => {
 let commandResults = commands.map((commandFn) => {
 	return commandFn(lifx, controller);
 });
+startRtm();
