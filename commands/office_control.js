@@ -2,47 +2,17 @@
 let Promise = require("bluebird");
 let util = require("util");
 let breathe = require("./breather.js");
+let constants = require('./constants');
 let nextBreath = null;
 let mentionTrackers = {};
-let hue = {
-	"red": 360,
-	"orange": 26,
-	"yellow": 54,
-	"green": 95,
-	"teal": 156,
-	"aqua": 172,
-	"blue": 199,
-	"navy": 231,
-	"indigo": 261,
-	"purple": 176,
-	"violet": 302,
-	"pink": 330
-};
-let saturation = {
-	"cold":10,
-	"cool": 30,
-	"warm": 50,
-	"hot": 100
-};
-let brightness = {
-	"dim": 50,
-	"dimmer": 20,
-	"bright": 100
-};
-let duration = [
-	[/([\d]+)[\s*]*second/, 1],
-	[/([\d]+)[\s*]*minute/, 60],
-	[/([\d]+)[\s*].*hour/, 3600]
-];
-let temperature = {
-	"incandescent white" : 2000,
-	"warm white": 2500,
-	"neutral white": 3000,
-	"studio white": 8000,
-	"eye burning white": 9000
-}
+const hue = constants.hue
+const saturation = constants.saturation
+const brightness = constants.brightness
+const duration = constants.duration
+let temperature = constants.temperature
+let hustle = false;
 module.exports = (lifx, controller) => {
-	let changePattern = /(turn|change|blink|breathe)(.*)(lights|light)/
+	let changePattern = /(hustle|turn|change|blink|breathe)(.*)(lights|light)/
 	controller.hears("^(what|show).*lights",['direct_message','direct_mention','mention','message_received'], (bot, message) => {
 		let lights = lifx.lights('on');
 		
@@ -52,12 +22,19 @@ module.exports = (lifx, controller) => {
 		});
 	});
 	// change lights
+	controller.hears("^(do the hustle).*(lights|light)", ['direct_message','direct_mention','mention', 'message_received'], (bot, message) => {
+		hustle = true;
+		bot.reply(message, ":champagne: :cocktail: :tada:")
+		matchLights(message).then((matched) => disco(matched));
+	})
+
 	controller.hears("^(turn|change|blink).*(lights|light)", ['direct_message','direct_mention','mention', 'message_received'], (bot, message) => {
 		let k = matchKelvin(message);
 		let hue = matchHue(message);
 		let brightness = k > 8999 ? 100 : matchBright(message);
 		let sat = k == 3500 ? matchSat(message): 0;
 		let dur = matchDuration(message);
+		hustle = false;
 
 
 		console.log("Hue: ", hue);
@@ -249,9 +226,22 @@ module.exports = (lifx, controller) => {
 		if(lights != null && lights.length > 1) {
 			let toChange = lights[2].trim();
 			return Promise.all(lifx.lights('on').map((l) => lightLabel(l)))
-			.then(labels => labels.filter((l) => l.label.toLowerCase().indexOf(toChange.toLowerCase()) > -1));
+			.then(labels => labels.filter((l) => toChange == 'all' ||
+				 l.label.toLowerCase().indexOf(toChange.toLowerCase()) > -1));
 		}
 		return Promise.reject(new Error("cant match"));
+	}
+
+	let disco = (matched) => {
+		if(!hustle) return;
+		let colors = Object.keys(constants.hue);
+		let choice = Math.floor(Math.random() * colors.length)
+		let colorchoice = constants.hue[colors[choice]];
+		matched.forEach((lp) => {
+			lp.light.color(colorchoice, constants.saturation['hot'],
+				constants.brightness['bright'],constants.temperature['eye burning white'], 400);	
+		})
+		setTimeout(disco.bind(null, matched), 400)
 	}
 
 	let lightLabel = (light) => {
