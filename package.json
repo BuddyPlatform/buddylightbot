@@ -13,6 +13,7 @@
     "botkit": "^0.4.1",
     "node-lifx": "^0.6.0",
     "pingdom-api": "^0.7.0",
+    "request": "^2.81.0",
     "winston": "^2.3.0"
   }
 }

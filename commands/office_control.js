@@ -3,6 +3,7 @@ let Promise = require("bluebird");
 let util = require("util");
 let breathe = require("./breather.js");
 let constants = require('./constants');
+let sonos = require('../external/sonos')(process.env.SONOS_HOST, process.env.SONOS_ROOM)
 let nextBreath = null;
 let mentionTrackers = {};
 const hue = constants.hue
@@ -25,6 +26,7 @@ module.exports = (lifx, controller) => {
 	controller.hears("^(do the hustle).*(lights|light)", ['direct_message','direct_mention','mention', 'message_received'], (bot, message) => {
 		hustle = true;
 		bot.reply(message, ":champagne: :cocktail: :tada:")
+		sonos.party().then(console.log).catch(console.error)
 		matchLights(message).then((matched) => disco(matched));
 	})
 
@@ -35,7 +37,7 @@ module.exports = (lifx, controller) => {
 		let sat = k == 3500 ? matchSat(message): 0;
 		let dur = matchDuration(message);
 		hustle = false;
-
+		sonos.business().then(console.log).catch(console.error)
 
 		console.log("Hue: ", hue);
 		console.log("Sat: ", sat);
