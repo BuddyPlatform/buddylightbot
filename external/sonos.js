@@ -22,7 +22,7 @@ module.exports = (sonosHost, room) => {
 		},
 		business: () => {
 			return new Promise((resolve, reject) => {
-				request.get(util.format('%s/%s/pause'), (e, response) => {
+				request.get(util.format('%s/%s/pause', sonosHost, room), (e, response) => {
 					if(e){ 
 						reject(e)
 					} else {
