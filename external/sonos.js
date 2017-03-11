@@ -9,7 +9,7 @@ module.exports = (sonosHost, room) => {
 					if(e){
 						reject(e);
 					} else {
-						request.get(util.format('%s/%s/playlists/party button', sonosHost, room), (e, response) => {
+						request.get(util.format('%s/%s/playlist/party button', sonosHost, room), (e, response) => {
 							if(e){
 								reject(e)
 							} else {
