@@ -1,5 +1,6 @@
 let util = require('util')
 let Promise = require('bluebird')
+let request = require('request')
 module.exports = (sonosHost, room) => {
 	return {
 		party: () => {
